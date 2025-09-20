@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>{{ brand_name }} · Chess</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="icon" href="{{ url_for('static', filename='branding/logo.svg') }}">
+  <style>
+    body{margin:0;font:16px/1.6 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+    header,footer{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #eee}
+    footer{border-top:1px solid #eee;border-bottom:none;color:#666}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+    .brand img{height:28px}
+    .container{max-width:1100px;margin:0 auto;padding:20px}
+    a{color:#0b66ff;text-decoration:none}
+    .btn{padding:10px 14px;border-radius:10px;border:1px solid #ddd;background:#fafafa;cursor:pointer}
+    .btn.primary{background:#0b66ff;color:#fff;border-color:#0b66ff}
+    .card{border:1px solid #eee;border-radius:12px;padding:18px}
+    .flash{background:#fff0c2;border:1px solid #ffde7b;padding:10px;border-radius:8px;margin:10px 0}
+  </style>
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="{{ url_for('static', filename='branding/logo.svg') }}" alt="logo">
+    <div>{{ brand_name }}</div>
+  </div>
+  <nav>
+    {% if session.get('user_id') %}
+      <a href="{{ url_for('home') }}">Play</a> ·
+      <a href="{{ url_for('logout') }}">Logout</a>
+    {% else %}
+      <a href="{{ url_for('login') }}">Login</a> ·
+      <a href="{{ url_for('signup') }}">Sign up</a>
+    {% endif %}
+  </nav>
+</header>
+<div class="container">
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+<footer>
+  <div>© <span id="yr"></span> {{ brand_name }}</div>
+  <div>Made with ❤️</div>
+</footer>
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+{% block body_extra %}{% endblock %}
+</body>
+</html>

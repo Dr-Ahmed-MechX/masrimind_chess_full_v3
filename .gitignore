@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.log
+*.tmp
+*.bak
+*.swp
+
+# Jupyter/Notebook (لو استخدمتهم)
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+
+# PyCharm / VSCode
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Dataset / models
+data/
+datasets/
+*.pt
+*.pth
+*.h5
+*.onnx
+
+# Database / secrets
+*.sqlite3
+*.db
+.env
+*.yaml
+*.yml
+
+# Reports / generated PDFs
+*.pdf
+
+# SocketIO cache
+flask_session/
+instance/
+
+# Node/Vercel (لو استخدمت npm في المستقبل)
+node_modules/
+.vercel/
+
+# Coverage/test
+.coverage
+htmlcov/
+coverage.xml
+
+# Build
+build/
+dist/
+*.egg-info/

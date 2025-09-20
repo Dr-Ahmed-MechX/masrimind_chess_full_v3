@@ -1,0 +1,31 @@
+# Web
+Flask>=3.0
+Flask-SocketIO>=5.3
+eventlet>=0.36
+itsdangerous>=2.2
+Werkzeug>=3.0
+Jinja2>=3.1
+PyYAML>=6.0
+
+# Auth & DB
+bcrypt>=4.1
+passlib>=1.7
+sqlite-utils>=3.36
+
+# Chess & AI
+python-chess==1.999
+torch>=2.2
+numpy>=1.26
+tqdm>=4.66
+
+# Plot / Reports
+matplotlib>=3.8
+cairosvg>=2.7
+reportlab>=4.0
+
+# Email
+email-validator>=2.2
+
+# Utils
+pydantic>=2.7
+
