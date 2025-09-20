@@ -1,10 +1,35 @@
 {% extends "base.html" %}
+
+{% block head_extra %}
+<style>
+  .auth-wrap{max-width:360px;margin:6vh auto 0;}
+  .auth-card h2{margin:0 0 12px;font-size:18px;}
+  .auth-card label{display:block;margin:10px 0 6px;font-weight:600;}
+  .auth-card input{
+    width:100%;padding:12px;border-radius:10px;outline:none;
+    background:#111319;color:#eaeaea;border:1px solid #2b2e35;
+  }
+  .auth-card .btn{width:100%;margin-top:14px;}
+  .auth-hint{margin-top:10px;text-align:center;color:var(--muted);}
+</style>
+{% endblock %}
+
 {% block content %}
-<h2>Sign up</h2>
-<form method="post" class="card">
-  <label>Email<br><input type="email" name="email" required></label><br><br>
-  <label>Password<br><input type="password" name="password" required minlength="6"></label><br><br>
-  <button class="btn primary">Create account</button>
-</form>
-<p>Have an account? <a href="{{ url_for('login') }}">Login</a></p>
+<div class="auth-wrap">
+  <div class="card auth-card">
+    <h2>Sign up</h2>
+    <form method="POST" action="{{ url_for('signup') }}">
+      <label>Email</label>
+      <input type="email" name="email" required autocomplete="email">
+
+      <label>Password</label>
+      <input type="password" name="password" required minlength="6" autocomplete="new-password">
+
+      <button class="btn primary" type="submit">Create account</button>
+    </form>
+    <div class="auth-hint">
+      Have an account? <a href="{{ url_for('login') }}">Login</a>
+    </div>
+  </div>
+</div>
 {% endblock %}

@@ -5,50 +5,115 @@
   <title>{{ brand_name }} · Chess</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <link rel="icon" href="{{ url_for('static', filename='branding/logo.svg') }}">
+
   <style>
-    body{margin:0;font:16px/1.6 system-ui,Segoe UI,Roboto,Helvetica,Arial}
-    header,footer{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #eee}
-    footer{border-top:1px solid #eee;border-bottom:none;color:#666}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
-    .brand img{height:28px}
-    .container{max-width:1100px;margin:0 auto;padding:20px}
-    a{color:#0b66ff;text-decoration:none}
-    .btn{padding:10px 14px;border-radius:10px;border:1px solid #ddd;background:#fafafa;cursor:pointer}
-    .btn.primary{background:#0b66ff;color:#fff;border-color:#0b66ff}
-    .card{border:1px solid #eee;border-radius:12px;padding:18px}
-    .flash{background:#fff0c2;border:1px solid #ffde7b;padding:10px;border-radius:8px;margin:10px 0}
+    :root{
+      --bg:#0e0e10; --fg:#eaeaea; --muted:#a4a4a4;
+      --card:#15161a; --border:#20222a; --shadow: rgba(0,0,0,.35);
+      --link:#9bd1ff; --link-hover:#cfe9ff;
+      --footer-bg:#0e0e10; --footer-border:#2a2a2a;
+      --header-bg:#0e0e10; --header-border:#2a2a2a;
+    }
+
+    /* Base */
+    html,body{margin:0;background:var(--bg);color:var(--fg);
+      font:16px/1.6 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    /* مساحة للفوتر الثابت */
+    body{ padding-bottom: 52px; }
+
+    a{ color: var(--link); text-decoration: none; }
+    a:hover{ color: var(--link-hover); text-decoration: underline; }
+
+    .container{ max-width:1100px; margin:0 auto; padding:20px 16px; }
+
+    /* Header */
+    header{
+      position: sticky; top:0; z-index: 50;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 16px; background:var(--header-bg);
+      border-bottom:1px solid var(--header-border);
+      backdrop-filter: blur(6px);
+    }
+    .brand{ display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.2px; }
+    .brand img{ height:28px; }
+    nav a{ margin: 0 6px; }
+
+    /* Cards / UI helpers (مفيدة لصفحات الفورمز) */
+    .card{
+      background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px;
+      box-shadow: 0 12px 30px -24px rgba(0,0,0,.8), inset 0 0 0 1px rgba(255,255,255,.03);
+    }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid #2b2e35; background:#1f2126; color:#fff; cursor:pointer; }
+    .btn.primary{ background:#0b66ff; border-color:#0b66ff; }
+    .flash{ background:#2a2a12; border:1px solid #6d5f10; padding:10px; border-radius:8px; margin:10px 0; color:#ffe89a; }
+
+    /* Footer (animated heart) */
+    .site-footer{
+      position: fixed; left:0; right:0; bottom:0; z-index: 999;
+      display:flex; align-items:center; justify-content:center;
+      background:var(--footer-bg); border-top:1px solid var(--footer-border);
+      padding:8px 0; font-size:14px; color:var(--muted);
+    }
+    .footer-inner{
+      width:100%; max-width:1100px; padding:0 16px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .footer-right{ display:flex; align-items:center; gap:8px; }
+    .heart{ width:20px; height:20px; display:inline-block; transform-origin:center; animation: heartbeat 1s infinite; }
+    @keyframes heartbeat{
+      0%{ transform: scale(1);} 14%{ transform: scale(1.3);} 28%{ transform: scale(1);}
+      42%{ transform: scale(1.3);} 70%{ transform: scale(1);} 100%{ transform: scale(1);}
+    }
+    @media (prefers-reduced-motion: reduce){ .heart{ animation: none; } }
   </style>
+
   {% block head_extra %}{% endblock %}
 </head>
 <body>
-<header>
-  <div class="brand">
-    <img src="{{ url_for('static', filename='branding/logo.svg') }}" alt="logo">
-    <div>{{ brand_name }}</div>
+  <header>
+    <div class="brand">
+      <img src="{{ url_for('static', filename='branding/logo.svg') }}" alt="logo">
+      <div>{{ brand_name }}</div>
+    </div>
+    <nav>
+      {% if session.get('user_id') %}
+        <a href="{{ url_for('home') }}">Play</a> ·
+        <a href="{{ url_for('logout') }}">Logout</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">Login</a> ·
+        <a href="{{ url_for('signup') }}">Sign up</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <div class="container">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
   </div>
-  <nav>
-    {% if session.get('user_id') %}
-      <a href="{{ url_for('home') }}">Play</a> ·
-      <a href="{{ url_for('logout') }}">Logout</a>
-    {% else %}
-      <a href="{{ url_for('login') }}">Login</a> ·
-      <a href="{{ url_for('signup') }}">Sign up</a>
-    {% endif %}
-  </nav>
-</header>
-<div class="container">
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
-    {% endif %}
-  {% endwith %}
-  {% block content %}{% endblock %}
-</div>
-<footer>
-  <div>© <span id="yr"></span> {{ brand_name }}</div>
-  <div>Made with ❤️</div>
-</footer>
-<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
-{% block body_extra %}{% endblock %}
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-left">© <span id="yr"></span> {{ brand_name }}</div>
+      <div class="footer-right">
+        <span>Made with Egyptian pure</span>
+        <svg class="heart" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="red" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+                2 6 4 4 6.5 4c1.74 0 3.41 1.01
+                4.13 2.44h1.74C14.09 5.01 15.76 4 17.5 4
+                20 4 22 6 22 8.5c0 3.78-3.4 6.86-8.55
+                11.54L12 21.35z"/>
+        </svg>
+      </div>
+    </div>
+  </footer>
+
+  <script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+  {% block body_extra %}{% endblock %}
 </body>
 </html>

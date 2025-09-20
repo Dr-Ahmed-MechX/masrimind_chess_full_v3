@@ -13,8 +13,14 @@
       --footer-bg:#0e0e10; --footer-border:#2a2a2a;
     }
     html,body{background:var(--bg);color:var(--fg);margin:0;font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,"Apple Color Emoji","Segoe UI Emoji";}
-    /* علشان الفوتر ثابت وما يغطيش المحتوى */
+    /* مساحة للـ footer الثابت */
     body { padding-bottom: 44px; }
+
+    /* ===== تحسينات الموبايل والدقّة ===== */
+    html, body { overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+    .wrap, .board-wrap, #board { user-select: none; -webkit-user-select:none; -ms-user-select:none; }
+    .board-wrap, #board, .piece { touch-action: none; -ms-touch-action: none; }
+    svg image.piece { -webkit-user-drag: none; user-drag: none; }
 
     .wrap{ max-width:1080px; margin:24px auto; padding:0 16px; }
     h1{ margin:0 0 12px; font-weight:700; letter-spacing:.2px; display:flex; align-items:center; gap:10px;}
@@ -30,8 +36,6 @@
     .board-wrap{ width:min(90vw, 720px); aspect-ratio:1/1; border-radius:18px; overflow:hidden; background:#0c0d0f;
       box-shadow: 0 20px 50px -30px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.04);}
     #board{ width:100%; height:100%; display:block; shape-rendering:geometricPrecision; text-rendering:optimizeLegibility; image-rendering:crisp-edges; transform-origin:50% 50%;}
-/*   .orient-white #board{ transform: rotate(0deg);}*/
-/*    .orient-black #board{ transform: rotate(180deg);}*/
     .square.light { fill: var(--board-light) !important; }
     .square.dark  { fill: var(--board-dark)  !important; }
     .piece{ opacity:1 !important; filter: drop-shadow(0 .02em .05em var(--shadow)); vector-effect: non-scaling-stroke; paint-order: stroke fill; }
@@ -50,55 +54,20 @@
     .modal-card .title{ font-weight:700; margin-bottom:10px; }
     .choices{ display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
 
-    /* ====== Footer (Animated Heart) ====== */
+    /* ===== Footer ===== */
     .site-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  padding: 8px 0;
-  font-size: 14px;
-  color: var(--muted);
-  background: var(--footer-bg);
-  border-top: 1px solid var(--footer-border);
-  z-index: 999;
-}
-
-.footer-inner {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 0 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.footer-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.heart {
-  width: 20px;
-  height: 20px;
-  display: inline-block;
-  transform-origin: center;
-  animation: heartbeat 1s infinite;
-}
-
+      position: fixed; bottom: 0; left: 0; width: 100%;
+      padding: 8px 0; font-size: 14px; color: var(--muted);
+      background: var(--footer-bg); border-top: 1px solid var(--footer-border); z-index: 999;
+    }
+    .footer-inner { max-width: 1080px; margin: 0 auto; padding: 0 16px; display: flex; justify-content: space-between; align-items: center; }
+    .footer-right { display: flex; align-items: center; gap: 8px; }
+    .heart { width: 20px; height: 20px; display: inline-block; transform-origin: center; animation: heartbeat 1s infinite; }
     @keyframes heartbeat{
-      0%{ transform: scale(1);}
-      14%{ transform: scale(1.3);}
-      28%{ transform: scale(1);}
-      42%{ transform: scale(1.3);}
-      70%{ transform: scale(1);}
-      100%{ transform: scale(1);}
+      0%{ transform: scale(1);} 14%{ transform: scale(1.3);} 28%{ transform: scale(1);}
+      42%{ transform: scale(1.3);} 70%{ transform: scale(1);} 100%{ transform: scale(1);}
     }
-    /* احترام تفضيل المستخدم لتقليل الحركة */
-    @media (prefers-reduced-motion: reduce){
-      .heart{ animation: none; }
-    }
+    @media (prefers-reduced-motion: reduce){ .heart{ animation: none; } }
   </style>
 
   <link rel="icon" href="{{ url_for('static', filename='branding/logo.svg') }}">
@@ -122,7 +91,7 @@
         <div style="margin-top:.5em;"><b>MCTS Visits (Top):</b>
           <ul id="mcts-top" class="explain-list"></ul>
         </div>
-        <div><b>Policy Top‑5:</b>
+        <div><b>Policy Top-5:</b>
           <ul id="policy-top" class="explain-list"></ul>
         </div>
         <div style="margin-top:.75em;">
@@ -141,7 +110,7 @@
     </div>
   </div>
 
-  <!-- Promotion Modal (placeholder) -->
+  <!-- Promotion Modal -->
   <div id="promoModal" class="modal hidden">
     <div class="modal-card">
       <div class="title">Choose promotion</div>
@@ -155,7 +124,6 @@
   </div>
 
   <!-- Footer -->
-    <!-- Footer -->
   <footer class="site-footer">
     <div class="footer-inner">
       <div class="footer-left">developed and designed by Dr. Eng. Ahmed Fathy</div>
@@ -172,8 +140,8 @@
     </div>
   </footer>
 
-
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
+  <!-- لو الملف داخل web/static/client.js اتركه كما هو؛ لو داخل web/static/js/client.js غيّر المسار -->
   <script src="{{ url_for('static', filename='client.js') }}"></script>
 </body>
 </html>
