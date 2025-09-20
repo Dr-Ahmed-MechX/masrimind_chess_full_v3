@@ -416,6 +416,12 @@ def health():
         "sf_error": sf_error
     }), 200
 
+# if __name__ == "__main__":
+#     print("[BOOT] starting server on 127.0.0.1:5000 ...")
+#     socketio.run(app, host="127.0.0.1", port=5000, allow_unsafe_werkzeug=True)
 if __name__ == "__main__":
-    print("[BOOT] starting server on 127.0.0.1:5000 ...")
-    socketio.run(app, host="127.0.0.1", port=5000, allow_unsafe_werkzeug=True)
+    import os
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", "5000"))
+    print(f"[BOOT] starting server on {host}:{port} ...")
+    socketio.run(app, host=host, port=port, allow_unsafe_werkzeug=True)

@@ -29,3 +29,4 @@ email-validator>=2.2
 # Utils
 pydantic>=2.7
 
+gunicorn==21.2.0
