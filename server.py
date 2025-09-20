@@ -1,5 +1,13 @@
 # server.py
-import os, io, json, time, ssl, smtplib, yaml, sqlite3
+# server.py
+import os
+
+# ✅ لازم يبقى أول حاجة قبل أي imports تانية
+if os.getenv("SOCKETIO_ASYNC_MODE", "eventlet") == "eventlet":
+    import eventlet
+    eventlet.monkey_patch()
+
+import io, json, time, ssl, smtplib, yaml, sqlite3
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from email.mime.text import MIMEText
@@ -13,13 +21,18 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import chess
 import chess.pgn
 
-# شبكتك (اختياري)
-try:
-    from engine.network_engine import NetworkEngine, network_available
-except Exception:
+# الشبكة العصبية (اختياري – متعطّلة افتراضيًا)
+ENABLE_NET = os.getenv("ENABLE_NET_ENGINE", "0") == "1"
+if ENABLE_NET:
+    try:
+        from engine.network_engine import NetworkEngine, network_available
+    except Exception:
+        NetworkEngine = None
+        def network_available(): return False
+else:
+    NetworkEngine = None
     def network_available(): return False
-    class NetworkEngine:
-        ready = False
+
 
 # --- مشروعنا ---
 from db import init_schema, connect
@@ -420,7 +433,6 @@ def health():
 #     print("[BOOT] starting server on 127.0.0.1:5000 ...")
 #     socketio.run(app, host="127.0.0.1", port=5000, allow_unsafe_werkzeug=True)
 if __name__ == "__main__":
-    import os
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", "5000"))
     print(f"[BOOT] starting server on {host}:{port} ...")
