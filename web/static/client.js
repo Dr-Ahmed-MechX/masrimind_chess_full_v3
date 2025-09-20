@@ -1,7 +1,7 @@
-// web/static/js/client.js
+// web/static/client.js
 (function () {
   // ===== Socket =====
-  const socket = window.socket || io({ transports: ["websocket"] });
+  const socket = window.socket || io({ transports: ["websocket", "polling"] });
   window.socket = socket;
 
   // ===== Elements =====
@@ -42,7 +42,6 @@
     statusEl.textContent = `AI moved: ${data.move_uci}`;
   });
 
-  // (اختياري) لو السيرفر بعت explain state في أي وقت
   socket.on("solo_state", (data) => {
     if (data && data.your_color) {
       const isWhite = (data.your_color === "white");
@@ -54,28 +53,26 @@
 
   // ===== Actions =====
   function startSolo(color) {
-  myColor = color;
-  wrap.classList.toggle("orient-white", color === "white");
-  wrap.classList.toggle("orient-black", color === "black");
-  socket.emit("new_game", { color }, (resp) => {
-    if (!resp || resp.ok !== true || !resp.game_id) {
-      statusEl.textContent = "Error starting game.";
-      return;
-    }
-    currentGameId = resp.game_id;
-    position = startPosition();
-    lastMove = null;
-    renderPieces(position);
-    statusEl.textContent = `Game started (${resp.your_color || myColor})`;
-
-    // ✅ لو أنت بتلعب أسود، السيرفر بيرجع أول نقلة للـAI هنا
-    if (resp.ai_move) {
-      applyUciOnPosition(position, resp.ai_move);
+    myColor = color;
+    wrap.classList.toggle("orient-white", color === "white");
+    wrap.classList.toggle("orient-black", color === "black");
+    socket.emit("new_game", { color }, (resp) => {
+      if (!resp || resp.ok !== true || !resp.game_id) {
+        statusEl.textContent = "Error starting game.";
+        return;
+      }
+      currentGameId = resp.game_id;
+      position = startPosition();
+      lastMove = null;
       renderPieces(position);
-      statusEl.textContent = `AI moved: ${resp.ai_move}`;
-    }
-  });
-}
+      statusEl.textContent = `Game started (${resp.your_color || myColor})`;
+      if (resp.ai_move) {
+        applyUciOnPosition(position, resp.ai_move);
+        renderPieces(position);
+        statusEl.textContent = `AI moved: ${resp.ai_move}`;
+      }
+    });
+  }
 
   function finishGame() {
     if (!currentGameId) return (statusEl.textContent = "No game.");
@@ -118,9 +115,13 @@
     layer.setAttribute("id", "pieces");
     svg.appendChild(layer);
 
-    svg.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerup", onPointerUp);
+    // ===== Mobile-perfect input wiring =====
+    const supportsPointer = "PointerEvent" in window;
+    svg.addEventListener("dragstart", e => e.preventDefault()); // صور SVG لا تُسحب بالمتصفح
+    svg.addEventListener(supportsPointer ? "pointerdown" : "touchstart", onPointerDown, { passive: false });
+    window.addEventListener(supportsPointer ? "pointermove" : "touchmove", onPointerMove, { passive: false });
+    window.addEventListener(supportsPointer ? "pointerup"   : "touchend",  onPointerUp,   { passive: false });
+    window.addEventListener(supportsPointer ? "pointercancel" : "touchcancel", onPointerUp, { passive: false });
   }
 
   function renderPieces(pos) {
@@ -136,6 +137,10 @@
 
       const img = document.createElementNS("http://www.w3.org/2000/svg", "image");
       img.setAttribute("href", href);
+      // Safari توافق
+      img.setAttributeNS("http://www.w3.org/1999/xlink", "href", href);
+      img.setAttribute("draggable", "false");
+
       img.setAttribute("class", "piece");
       img.setAttribute("data-square", sq);
       img.setAttribute("data-piece", p);
@@ -176,7 +181,9 @@
 
   // ===== Drag & drop =====
   function onPointerDown(e) {
-    if (e.button !== 0) return;
+    e.preventDefault(); // يمنع سكرول/زووم على الموبايل
+    if (e.button != null && e.button !== 0) return;
+
     const target = e.target;
     if (!(target && target.classList && target.classList.contains("piece"))) return;
 
@@ -186,6 +193,11 @@
     const from = target.getAttribute("data-square");
     const pt = clientToBoardPoint(e);
     const { x, y } = squareToXY(from);
+
+    // Pointer capture (لتحكّم أدق)
+    if (target.setPointerCapture && e.pointerId != null) {
+      try { target.setPointerCapture(e.pointerId); } catch (_) {}
+    }
 
     dragging = {
       piece,
@@ -201,6 +213,7 @@
 
   function onPointerMove(e) {
     if (!dragging) return;
+    e.preventDefault();
     const pt = clientToBoardPoint(e);
     dragging.el.setAttribute("x", clamp(pt.x - dragging.dx, 0, 7));
     dragging.el.setAttribute("y", clamp(pt.y - dragging.dy, 0, 7));
@@ -208,13 +221,14 @@
 
   function onPointerUp(e) {
     if (!dragging) return;
+    e.preventDefault();
     const target = dragging.el;
     target.style.pointerEvents = "auto";
     const from = dragging.from;
     const pt = clientToBoardPoint(e);
     const to = xyToSquare(
-      Math.round(clamp(pt.x - dragging.dx + 0.5, 0, 7)),
-      Math.round(clamp(pt.y - dragging.dy + 0.5, 0, 7))
+      Math.min(7, Math.max(0, Math.round(pt.x - dragging.dx + 0.5))),
+      Math.min(7, Math.max(0, Math.round(pt.y - dragging.dy + 0.5)))
     );
     const promo = willPromote(dragging.piece, from, to) ? "q" : "";
     const uci = buildUci(from, to, promo);
@@ -232,12 +246,11 @@
     renderPieces(position);
     statusEl.textContent = "You: " + uci;
 
-    // أرسل للسيرفر مع انتظار ACK
     socket.emit("user_move", { game_id: currentGameId, move_uci: uci }, (resp) => {
       if (!resp || resp.ok !== true) {
         position = snapshot;
         renderPieces(position);
-        const reason = (resp && resp.reason) || (resp && resp.error) || "Illegal move.";
+        const reason = (resp && (resp.reason || resp.error)) || "Illegal move.";
         statusEl.textContent = reason;
       }
     });
@@ -344,11 +357,10 @@
     return true;
   }
 
-  // ---- Geometry / orientation ----
   function squareToXY(sq) {
-    const file = sq.charCodeAt(0) - 97; // a=0
-    const rank = parseInt(sq[1], 10) - 1; // 1..8 -> 0..7
-    let x = file, y = 7 - rank; // white at bottom
+    const file = sq.charCodeAt(0) - 97;
+    const rank = parseInt(sq[1], 10) - 1;
+    let x = file, y = 7 - rank; // white bottom
     if (myColor === "black") { x = 7 - x; y = 7 - y; }
     return { x, y };
   }
@@ -365,10 +377,11 @@
   }
   function canDragPiece(p) { return (myColor === "white" && p[0] === "w") || (myColor === "black" && p[0] === "b"); }
   function clientToBoardPoint(e) {
+    const t = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]) || e;
     const rect = svg.getBoundingClientRect();
     const s = Math.min(rect.width, rect.height);
-    const bx = (e.clientX - rect.left) / (s / 8);
-    const by = (e.clientY - rect.top) / (s / 8);
+    const bx = (t.clientX - rect.left) / (s / 8);
+    const by = (t.clientY - rect.top) / (s / 8);
     return { x: bx, y: by };
   }
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
