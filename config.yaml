@@ -1,0 +1,48 @@
+app:
+  secret_key: "${SECRET_KEY:CHANGE_ME_SUPER_SECRET}"
+  host: "0.0.0.0"
+  port: 5000
+  debug: true
+  brand: "MasriMind"
+
+paths:
+  pvnet_model: "models/pvnet_pv_rl.pt"
+  stockfish: "assets/sf/stockfish.exe"
+
+ai:
+  use_rl_if_available: true
+  mcts:
+    simulations: 600
+    cpuct: 1.2
+    temperature: 0.8
+    dirichlet_alpha: 0.3
+    dirichlet_eps: 0.25
+  stockfish:
+    depth: 16
+    threads: 2
+    hash: 256
+
+#database:
+#  url: "data/masrimind.sqlite3"
+database.url: sqlite:///masrimind.db
+engine:
+  network_model: "training/pvnet_pv_rl.pt"  # مسار موديلك
+  use_network: true                          # لو true والموديل موجود هيشتغل
+smtp:
+  host: "smtp.gmail.com"
+  port: 587
+  use_tls: true
+  username: "${SMTP_USER:YOUR_EMAIL@gmail.com}"
+  password: "${SMTP_PASS:YOUR_APP_PASSWORD}"
+  from_name: "MasriMind Reports"
+  from_email: "${SMTP_FROM:YOUR_EMAIL@gmail.com}"
+  to_override: ""   # سيبه فاضي لو عايز يبعت لبريدك اللي سجلت بيه
+
+
+database:
+  url: "masrimind.db"
+
+report:
+  enable: true
+  page_size: "A4"
+  dpi: 160
