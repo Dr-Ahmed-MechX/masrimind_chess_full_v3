@@ -63,8 +63,9 @@ app = Flask(
 )
 app.secret_key = cfg["app"]["secret_key"]
 
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
-
+# socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+async_mode = os.getenv("SOCKETIO_ASYNC_MODE", "threading")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode=async_mode)
 # DB
 DB_URL = cfg["database"]["url"]
 init_schema(DB_URL)
